@@ -49,6 +49,32 @@ public class DeviceWS
 		return Response.status(200).entity(toReturn.toString()).build();
 	}
 	
+	@Path("getAllLinkedDevices/{imei}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllLinkedDevices(@PathParam("imei") String imei)
+	{
+		JSONObject toReturn = null;
+		int code = 0;
+		String title = null;
+		String message = null;
+		
+		toReturn = DeviceDAO.getAllLinkedDevices(imei);
+		if(toReturn == null)
+		{
+			code = -1;
+			title = "Server Error!";
+			message = "Please contact the developer!";
+			
+			toReturn = new JSONObject();
+			toReturn.put("code", code);
+			toReturn.put("title", title);
+			toReturn.put("message", message);
+		}
+		
+		return Response.status(200).entity(toReturn.toString()).build();
+	}
+	
 	@Path("updateDeviceCoordinateHealth")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -73,15 +99,7 @@ public class DeviceWS
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response linkDevice(String body)
 	{
-		JSONObject toReturn = new JSONObject();
-		
-		boolean isLinked = DeviceDAO.linkDevice(body);
-		if(isLinked)
-		{
-			toReturn.put("code", 0);
-		}else {
-			toReturn.put("code", -1);
-		}
+		JSONObject toReturn = DeviceDAO.linkDevice(body);
 		
 		return Response.status(200).entity(toReturn.toString()).build();
 	}
