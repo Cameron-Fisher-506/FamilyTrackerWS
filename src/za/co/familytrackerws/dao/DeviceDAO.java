@@ -354,6 +354,18 @@ public class DeviceDAO
 									message = "You have successfully linked " + imeiToLink + " !";
 								}
 							}
+						}else
+						{
+							Document toPush = new Document();
+							toPush.put("imei", imeiToLink);
+							toPush.put("name", name);
+							
+							Document document = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), Updates.push("monitors", toPush));
+							if(document != null)
+							{
+								code = 0;
+								message = "You have successfully linked " + imeiToLink + " !";
+							}
 						}
 						
 					}
