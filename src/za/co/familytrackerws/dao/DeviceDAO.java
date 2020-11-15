@@ -143,6 +143,17 @@ public class DeviceDAO
 						toReturn.put("title", title);
 						toReturn.put("message", message);
 						toReturn.put("devices", jsonArray);
+					}else
+					{
+						code = 0;
+						title = "You dont have any devices linked to track!";
+						message = "You dont have any devices linked to track!";
+						
+						toReturn = new JSONObject();
+						toReturn.put("code", code);
+						toReturn.put("title", title);
+						toReturn.put("message", message);
+						toReturn.put("devices", jsonArray);
 					}
 				}
 			}else
