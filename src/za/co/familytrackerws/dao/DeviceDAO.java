@@ -1,8 +1,6 @@
 package za.co.familytrackerws.dao;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONArray;
@@ -21,7 +19,7 @@ public class DeviceDAO
 	public static JSONObject create(JSONObject jsonObject)
 	{
 		JSONObject toReturn = null;
-		int code = 0;
+		int responseCode = 0;
 		String title = null;
 		String message = null;
 		
@@ -31,21 +29,21 @@ public class DeviceDAO
 		{
 			toReturn = new JSONObject();
 			
-			String imei = jsonObject.has("imei") ? jsonObject.getString("imei") : null;
+			String code = jsonObject.has("code") ? jsonObject.getString("code") : null;
 			String name = jsonObject.has("name") ? jsonObject.getString("name") : null;
 			
-			if(imei != null)
+			if(code != null)
 			{
-				Document result = deviceCollection.find(Filters.eq("imei", imei)).first();
+				Document result = deviceCollection.find(Filters.eq("code", code)).first();
 				if(result != null)
 				{
 					Bson document = Document.parse(jsonObject.toString());
 					Bson updateOperation = new Document("$set", document);
 					
-					Document updatedDocument = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), updateOperation);
+					Document updatedDocument = deviceCollection.findOneAndUpdate(Filters.eq("code", code), updateOperation);
 					if(updatedDocument != null)
 					{					
-						title = "Updated " + imei + " !";
+						title = "Updated " + code + " !";
 						message = "Your device details has been successfully updated!";
 						
 						toReturn.put("code", code);
@@ -53,11 +51,11 @@ public class DeviceDAO
 						toReturn.put("message", message);
 					}else
 					{
-						code = -1;
-						title = "Failed to update " + imei + " !";
+						responseCode = -1;
+						title = "Failed to update " + code + " !";
 						message = "Your device details failed to update!";
 						
-						toReturn.put("code", code);
+						toReturn.put("code", responseCode);
 						toReturn.put("title", title);
 						toReturn.put("message", message);
 					}
@@ -73,21 +71,22 @@ public class DeviceDAO
 						message = name + " device has been successfully created!";
 					}else
 					{
-						title = "Created " + imei;
-						message = imei + " has been successfully created!";
+						title = "Created " + code;
+						message = code + " has been successfully created!";
 					}
 					
-					toReturn.put("code", code);
+					toReturn.put("code", responseCode);
 					toReturn.put("title", title);
+					toReturn.put("myCode", code);
 					toReturn.put("message", message);
 				}
 			}else
 			{
-				code = -1;
-				title = "IMEI not found.";
-				message = "IMEI must be passed in order to update or create a new device!";
+				responseCode = -1;
+				title = "Code not found.";
+				message = "Code must be passed in order to update or create a new device!";
 				
-				toReturn.put("code", code);
+				toReturn.put("code", responseCode);
 				toReturn.put("title", title);
 				toReturn.put("message", message);
 			}
@@ -97,12 +96,12 @@ public class DeviceDAO
 		return toReturn;
 	}
 	
-	public static JSONObject getAllLinkedDevices(String imei)
+	public static JSONObject getAllLinkedDevices(String code)
 	{
 		JSONObject toReturn = null;
 		JSONArray jsonArray = new JSONArray();
 		
-		int code = 0;
+		int responseCode = 0;
 		String title = null;
 		String message = null;
 		
@@ -110,9 +109,9 @@ public class DeviceDAO
 		
 		if(deviceCollection != null)
 		{
-			if(imei != null)
+			if(code != null)
 			{
-				Document device = deviceCollection.find(Filters.eq("imei", imei)).first();
+				Document device = deviceCollection.find(Filters.eq("code", code)).first();
 				if(device != null && device.containsKey("monitors"))
 				{
 					List<Document> monitors = (List<Document>) device.get("monitors");
@@ -122,9 +121,9 @@ public class DeviceDAO
 						for(int i = 0; i < monitors.size(); i++)
 						{
 							Document monitor = monitors.get(i);
-							if(monitor != null && monitor.containsKey("imei"))
+							if(monitor != null && monitor.containsKey("code"))
 							{
-								JSONObject jsonObject = getDeviceCoordinateHealth(monitor.getString("imei"));
+								JSONObject jsonObject = getDeviceCoordinateHealth(monitor.getString("code"));
 								if(jsonObject != null)
 								{
 									jsonObject.put("name", monitor.containsKey("name") ? monitor.getString("name") : null);
@@ -134,58 +133,58 @@ public class DeviceDAO
 							}
 						}
 						
-						code = 0;
+						responseCode = 0;
 						title = "Linked devices found!";
 						message = "Linked devices found!";
 						
 						toReturn = new JSONObject();
-						toReturn.put("code", code);
+						toReturn.put("code", responseCode);
 						toReturn.put("title", title);
 						toReturn.put("message", message);
 						toReturn.put("devices", jsonArray);
 					}else
 					{
-						code = 0;
+						responseCode = 0;
 						title = "You dont have any devices linked to track!";
 						message = "You dont have any devices linked to track!";
 						
 						toReturn = new JSONObject();
-						toReturn.put("code", code);
+						toReturn.put("code", responseCode);
 						toReturn.put("title", title);
 						toReturn.put("message", message);
 						toReturn.put("devices", jsonArray);
 					}
 				}else
 				{
-					code = 0;
+					responseCode = 0;
 					title = "You dont have any devices linked to track!";
 					message = "You dont have any devices linked to track!";
 					
 					toReturn = new JSONObject();
-					toReturn.put("code", code);
+					toReturn.put("code", responseCode);
 					toReturn.put("title", title);
 					toReturn.put("message", message);
 					toReturn.put("devices", jsonArray);
 				}
 			}else
 			{
-				code = -1;
-				title = "IMEI not found.";
-				message = "IMEI must be passed in order to update or create a new device!";
+				responseCode = -1;
+				title = "Code not found.";
+				message = "Code must be passed in order to update or create a new device!";
 				
 				toReturn = new JSONObject();
-				toReturn.put("code", code);
+				toReturn.put("code", responseCode);
 				toReturn.put("title", title);
 				toReturn.put("message", message);
 			}
 		}else
 		{
-			code = -1;
+			responseCode = -1;
 			title = "Database Error!";
 			message = "Please contact the developer!";
 			
 			toReturn = new JSONObject();
-			toReturn.put("code", code);
+			toReturn.put("code", responseCode);
 			toReturn.put("title", title);
 			toReturn.put("message", message);
 		}
@@ -194,19 +193,19 @@ public class DeviceDAO
 		return toReturn;
 	}
 	
-	public static JSONObject getDeviceCoordinateHealth(String imei)
+	public static JSONObject getDeviceCoordinateHealth(String code)
 	{
 		JSONObject toReturn = null;
 		
 		MongoCollection<Document> deviceCollection = MongoUtils.mongoDatabase.getCollection(MONGO_DB_COLLECTION_NAME);
 		
-		if(imei != null)
+		if(code != null)
 		{
-			Document device = deviceCollection.find(Filters.eq("imei", imei)).first();
+			Document device = deviceCollection.find(Filters.eq("code", code)).first();
 			if(device != null)
 			{
 				toReturn = new JSONObject();
-				toReturn.put("imei", imei);
+				toReturn.put("code", code);
 				toReturn.put("name", device.containsKey("name") ? device.getString("name") : null);
 				toReturn.put("createdTime", device.containsKey("createdTime") ? device.getString("createdTime") : null);
 				
@@ -242,17 +241,17 @@ public class DeviceDAO
 		if(deviceCollection != null)
 		{
 			JSONObject jsonObject = new JSONObject(body);
-			if(jsonObject != null && jsonObject.has("imei"))
+			if(jsonObject != null && jsonObject.has("code"))
 			{
-				String imei = jsonObject.getString("imei");
-				if(imei != null)
+				String code = jsonObject.getString("code");
+				if(code != null)
 				{
 					if(jsonObject.has("coordinate"))
 					{
 						JSONObject coordinate = jsonObject.getJSONObject("coordinate");
 						if(coordinate != null)
 						{	
-							Document document = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), Updates.combine(
+							Document document = deviceCollection.findOneAndUpdate(Filters.eq("code", code), Updates.combine(
 									Updates.set("coordinate.latitude", coordinate.has("latitude") ? coordinate.getString("latitude") : null),
 									Updates.set("coordinate.longitude", coordinate.has("longitude") ? coordinate.getString("longitude") : null),
 									Updates.set("coordinate.speed", coordinate.has("speed") ? coordinate.getString("speed") : null),
@@ -276,7 +275,7 @@ public class DeviceDAO
 						JSONObject health = jsonObject.getJSONObject("health");
 						if(health != null && health.has("batteryLife") && health.has("signalStrength"))
 						{
-							Document document = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), Updates.combine(
+							Document document = deviceCollection.findOneAndUpdate(Filters.eq("code", code), Updates.combine(
 									Updates.set("health.batteryLife", health.has("batteryLife") ? health.getString("batteryLife") : null),
 									Updates.set("health.signalStrength", health.has("signalStrength") ? health.getString("signalStrength") : null),
 									Updates.set("health.isRoaming", health.has("isRoaming") ? health.getBoolean("isRoaming") : null),
@@ -301,7 +300,7 @@ public class DeviceDAO
 	public static JSONObject linkDevice(String body)
 	{
 		JSONObject toReturn = new JSONObject();
-		int code = 0;
+		int responseCode = 0;
 		String message = "";
 		
 		MongoCollection<Document> deviceCollection = MongoUtils.mongoDatabase.getCollection(MONGO_DB_COLLECTION_NAME);
@@ -310,14 +309,14 @@ public class DeviceDAO
 			if(body != null)
 			{
 				JSONObject jsonObject = new JSONObject(body);
-				if(jsonObject != null && jsonObject.has("imei") && jsonObject.has("imeiToLink") && jsonObject.has("name"))
+				if(jsonObject != null && jsonObject.has("code") && jsonObject.has("codeToLink") && jsonObject.has("name"))
 				{
-					String imei = jsonObject.getString("imei");
+					String code = jsonObject.getString("code");
 					String name = jsonObject.getString("name");
-					String imeiToLink = jsonObject.getString("imeiToLink");
-					if(imei != null)
+					String codeToLink = jsonObject.getString("codeToLink");
+					if(code != null)
 					{
-						Document device = deviceCollection.find(Filters.eq("imei", imei)).first();
+						Document device = deviceCollection.find(Filters.eq("code", code)).first();
 						if(device != null && device.containsKey("monitors"))
 						{
 							
@@ -329,13 +328,13 @@ public class DeviceDAO
 								for(int i = 0; i < monitors.size(); i++)
 								{
 									Document monitor = monitors.get(i);
-									if(monitor != null && monitor.containsKey("imei"))
+									if(monitor != null && monitor.containsKey("code"))
 									{
-										if(monitor.getString("imei").equals(imeiToLink))
+										if(monitor.getString("code").equals(codeToLink))
 										{
 											isExists = true;
-											code = 1;
-											message = imeiToLink + " is already linked!";
+											responseCode = 1;
+											message = codeToLink + " is already linked!";
 										}
 									}
 								}
@@ -344,27 +343,27 @@ public class DeviceDAO
 							if(!isExists)
 							{						
 								Document toPush = new Document();
-								toPush.put("imei", imeiToLink);
+								toPush.put("code", codeToLink);
 								toPush.put("name", name);
 								
-								Document document = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), Updates.push("monitors", toPush));
+								Document document = deviceCollection.findOneAndUpdate(Filters.eq("code", code), Updates.push("monitors", toPush));
 								if(document != null)
 								{
-									code = 0;
-									message = "You have successfully linked " + imeiToLink + " !";
+									responseCode = 0;
+									message = "You have successfully linked " + codeToLink + " !";
 								}
 							}
 						}else
 						{
 							Document toPush = new Document();
-							toPush.put("imei", imeiToLink);
+							toPush.put("code", codeToLink);
 							toPush.put("name", name);
 							
-							Document document = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), Updates.push("monitors", toPush));
+							Document document = deviceCollection.findOneAndUpdate(Filters.eq("code", code), Updates.push("monitors", toPush));
 							if(document != null)
 							{
-								code = 0;
-								message = "You have successfully linked " + imeiToLink + " !";
+								responseCode = 0;
+								message = "You have successfully linked " + codeToLink + " !";
 							}
 						}
 						
@@ -372,13 +371,13 @@ public class DeviceDAO
 					
 				}else
 				{
-					code = -1;
-					message = "Your device IMEI, partner IMEI and name is required to start monitoring!";
+					responseCode = -1;
+					message = "Your device Code, partner  and name is required to start monitoring!";
 				}
 			}
 		}
 		
-		toReturn.put("code", code);
+		toReturn.put("code", responseCode);
 		toReturn.put("message", message);
 		
 		return toReturn;
@@ -395,13 +394,13 @@ public class DeviceDAO
 			if(body != null)
 			{
 				JSONObject jsonObject = new JSONObject(body);
-				if(jsonObject != null && jsonObject.has("imei") && jsonObject.has("imeiToUnlink"))
+				if(jsonObject != null && jsonObject.has("code") && jsonObject.has("codeToUnlink"))
 				{
-					String imei = jsonObject.getString("imei");
-					String imeiToUnlink = jsonObject.getString("imeiToUnlink");
-					if(imei != null)
+					String code = jsonObject.getString("code");
+					String codeToUnlink = jsonObject.getString("codeToUnlink");
+					if(code != null)
 					{
-						Document device = deviceCollection.find(Filters.eq("imei", imei)).first();
+						Document device = deviceCollection.find(Filters.eq("code", code)).first();
 						if(device != null && device.containsKey("monitors"))
 						{
 							
@@ -412,14 +411,14 @@ public class DeviceDAO
 								for(int i = 0; i < monitors.size(); i++)
 								{
 									Document monitor = monitors.get(i);
-									if(monitor != null && monitor.containsKey("imei"))
+									if(monitor != null && monitor.containsKey("code"))
 									{
-										if(monitor.getString("imei").equals(imeiToUnlink))
+										if(monitor.getString("code").equals(codeToUnlink))
 										{
 											Document toRemove = new Document();
-											toRemove.put("imei", imeiToUnlink);
+											toRemove.put("code", codeToUnlink);
 											
-											Document document = deviceCollection.findOneAndUpdate(Filters.eq("imei", imei), Updates.pull("monitors", toRemove));
+											Document document = deviceCollection.findOneAndUpdate(Filters.eq("code", code), Updates.pull("monitors", toRemove));
 											if(document != null)
 											{
 												return true;
@@ -434,6 +433,23 @@ public class DeviceDAO
 					}
 					
 				}
+			}
+		}
+		
+		return toReturn;
+	}
+	
+	public static boolean isCodeExists(String code)
+	{
+		boolean toReturn = false;
+		
+		MongoCollection<Document> deviceCollection = MongoUtils.mongoDatabase.getCollection(MONGO_DB_COLLECTION_NAME);
+		if(deviceCollection != null)
+		{
+			Document device = deviceCollection.find(Filters.eq("code", code)).first();
+			if(device != null)
+			{
+				toReturn = true;
 			}
 		}
 		

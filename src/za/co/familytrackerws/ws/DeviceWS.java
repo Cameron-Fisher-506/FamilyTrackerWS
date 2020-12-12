@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.json.JSONObject;
 
 import za.co.familytrackerws.dao.DeviceDAO;
+import za.co.familytrackerws.utils.GeneralUtils;
 
 @Path("device")
 public class DeviceWS 
@@ -27,20 +28,35 @@ public class DeviceWS
 		JSONObject jsonObject = new JSONObject(body);
 		if(jsonObject != null)
 		{
+			String code = "";
+			if(jsonObject.has("code"))
+			{
+				code = jsonObject.getString("code");
+			}else
+			{
+				code = GeneralUtils.generateCode();
+				
+				while(DeviceDAO.isCodeExists(code))
+				{
+					code = GeneralUtils.generateCode();
+				}
+			}
+			
+			jsonObject.put("code", code);
 			toReturn = DeviceDAO.create(jsonObject);
 		}
 		
 		return Response.status(200).entity(toReturn.toString()).build();
 	}
 	
-	@Path("getDeviceCoordinateHealth/{imei}")
+	@Path("getDeviceCoordinateHealth/{code}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getDeviceCoordinateHealth(@PathParam("imei") String imei)
+	public Response getDeviceCoordinateHealth(@PathParam("code") String code)
 	{
 		JSONObject toReturn = null;
 		
-		toReturn = DeviceDAO.getDeviceCoordinateHealth(imei);
+		toReturn = DeviceDAO.getDeviceCoordinateHealth(code);
 		if(toReturn == null)
 		{
 			return Response.status(404).entity(-1).build();
@@ -49,25 +65,25 @@ public class DeviceWS
 		return Response.status(200).entity(toReturn.toString()).build();
 	}
 	
-	@Path("getAllLinkedDevices/{imei}")
+	@Path("getAllLinkedDevices/{code}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllLinkedDevices(@PathParam("imei") String imei)
+	public Response getAllLinkedDevices(@PathParam("code") String code)
 	{
 		JSONObject toReturn = null;
-		int code = 0;
+		int responseCode = 0;
 		String title = null;
 		String message = null;
 		
-		toReturn = DeviceDAO.getAllLinkedDevices(imei);
+		toReturn = DeviceDAO.getAllLinkedDevices(code);
 		if(toReturn == null)
 		{
-			code = -1;
+			responseCode = -1;
 			title = "Server Error!";
 			message = "Please contact the developer!";
 			
 			toReturn = new JSONObject();
-			toReturn.put("code", code);
+			toReturn.put("code", responseCode);
 			toReturn.put("title", title);
 			toReturn.put("message", message);
 		}
